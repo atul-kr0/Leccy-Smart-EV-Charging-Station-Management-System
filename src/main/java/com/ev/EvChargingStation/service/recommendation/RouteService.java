@@ -1,6 +1,5 @@
 package com.ev.EvChargingStation.service.recommendation;
 
-import com.ev.EvChargingStation.service.recommendation.OpenRouteServiceClient;
 import com.ev.EvChargingStation.service.recommendation.model.CandidateStation;
 import com.ev.EvChargingStation.service.recommendation.model.RouteInfo;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +13,33 @@ public class RouteService {
 
     private final OpenRouteServiceClient openRouteServiceClient;
 
+
+    /**
+     * Get route information between user and station.
+     *
+     * Used by StationDetailsService as well as
+     * the recommendation system.
+     */
+    public RouteInfo getRoute(
+            double userLatitude,
+            double userLongitude,
+            double stationLatitude,
+            double stationLongitude
+    ) {
+
+        return openRouteServiceClient.getRoute(
+                userLatitude,
+                userLongitude,
+                stationLatitude,
+                stationLongitude
+        );
+    }
+
+
+    /**
+     * Enrich recommendation candidates with
+     * real road distance and driving ETA.
+     */
     public List<CandidateStation> enrichCandidatesWithRoutes(
             List<CandidateStation> candidates,
             double userLatitude,
@@ -23,7 +49,7 @@ public class RouteService {
         for (CandidateStation candidate : candidates) {
 
             RouteInfo route =
-                    openRouteServiceClient.getRoute(
+                    getRoute(
                             userLatitude,
                             userLongitude,
                             candidate.getStation().getLatitude(),

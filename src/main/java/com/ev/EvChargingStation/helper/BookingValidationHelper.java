@@ -24,6 +24,7 @@ public class BookingValidationHelper {
                 user,
                 List.of(
                         BookingStatus.WAITING,
+                        BookingStatus.NOTIFIED,
                         BookingStatus.CHARGING
                 )
         )) {
