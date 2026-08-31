@@ -33,7 +33,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)   // not needed for a stateless JWT API
-                .cors(cors -> {})
+                .cors(cors -> {
+                })
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // no server-side session — JWT carries identity every request
                 .authorizeHttpRequests(auth -> auth
@@ -51,8 +52,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder()
-    {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -71,7 +71,8 @@ public class SecurityConfig {
                 List.of(
                         "http://localhost:5173",
                         "http://localhost:5174",
-                        "http://localhost:5177"
+                        "http://localhost:5177",
+                        "https://leccy-smart-ev-charging-station-fro.vercel.app"
                 )
         );
 
