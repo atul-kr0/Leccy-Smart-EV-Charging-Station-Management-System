@@ -109,16 +109,13 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
+        configuration.setAllowedOriginPatterns(
                 List.of(
-                        "http://localhost:5173",
-                        "http://localhost:5174",
-                        "http://localhost:5177",
                         "https://leccy.vercel.app",
-                        "https://leccy-smart-ev-charging-station-fro.vercel.app"
+                        "https://leccy-smart-ev-charging-station-fro.vercel.app",
+                        "http://localhost:*"
                 )
         );
 
@@ -133,7 +130,13 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedHeaders(
-                List.of("*")
+                List.of(
+                        "Authorization",
+                        "Content-Type",
+                        "Accept",
+                        "Origin",
+                        "X-Requested-With"
+                )
         );
 
         configuration.setAllowCredentials(true);
