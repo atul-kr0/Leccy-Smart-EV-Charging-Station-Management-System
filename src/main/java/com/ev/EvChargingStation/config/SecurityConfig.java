@@ -30,14 +30,42 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
+
         http
-                .csrf(AbstractHttpConfigurer::disable)   // not needed for a stateless JWT API
-                .cors(cors -> {
-                })
+                .csrf(AbstractHttpConfigurer::disable)
+
+                /*
+                 * Explicitly tell Spring Security which CORS configuration
+                 * source to use.
+                 */
+                .cors(cors ->
+                        cors.configurationSource(corsConfigurationSource)
+                )
+
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // no server-side session — JWT carries identity every request
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
                 .authorizeHttpRequests(auth -> auth
+
+                        /*
+                         * CORS preflight requests must be allowed through.
+                         */
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.OPTIONS,
+                                "/**"
+                        )
+                        .permitAll()
+
+                        /*
+                         * Public endpoints.
+                         */
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/contact",
@@ -45,9 +73,20 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         )
-                        .permitAll()   // register/login stay public
-                        .anyRequest().authenticated())  // TEMPORARY — everything open for now, until JWT filter is built
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .permitAll()
+
+                        /*
+                         * Everything else requires JWT authentication.
+                         */
+                        .anyRequest()
+                        .authenticated()
+                )
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
         return http.build();
     }
 
@@ -57,27 +96,40 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
 
         return config.getAuthenticationManager();
     }
 
+    /*
+     * Return the concrete UrlBasedCorsConfigurationSource type.
+     */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
                         "http://localhost:5174",
                         "http://localhost:5177",
-                        "https://leccy.vercel.app"
+                        "https://leccy.vercel.app",
+                        "https://leccy-smart-ev-charging-station-fro.vercel.app"
                 )
         );
 
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
         );
 
         configuration.setAllowedHeaders(
@@ -89,7 +141,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
         return source;
     }
