@@ -72,7 +72,7 @@ public class SecurityConfig {
                         "http://localhost:5173",
                         "http://localhost:5174",
                         "http://localhost:5177",
-                        "https://leccy-smart-ev-charging-station-fro.vercel.app"
+                        "https://leccy.vercel.app"
                 )
         );
 
