@@ -1,17 +1,27 @@
 package com.ev.EvChargingStation.mapper;
 
-import com.ev.EvChargingStation.dto.vehicle.VehicleRequestDTO;
 import com.ev.EvChargingStation.dto.vehicle.VehicleResponseDTO;
 import com.ev.EvChargingStation.entity.Vehicle;
+import com.ev.EvChargingStation.entity.VehicleCatalogue;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface VehicleMapper {
 
-    Vehicle toEntity(VehicleRequestDTO requestDTO);
-
-    VehicleResponseDTO entityToDto(Vehicle vehicle);
-
-    void updateEntityFromDto(VehicleRequestDTO requestDTO, @MappingTarget Vehicle vehicle);
+    default VehicleResponseDTO entityToDto(Vehicle vehicle) {
+        VehicleCatalogue c = vehicle.getCatalogueVehicle();
+        return new VehicleResponseDTO(
+                vehicle.getId(),
+                c.getId(),
+                c.getManufacturer(),
+                c.getModel(),
+                c.getVariant(),
+                vehicle.getRegistrationNumber(),
+                c.getBatteryCapacityKwh(),
+                c.getConnectorType(),
+                c.getMaxAcChargingKw(),
+                c.getMaxDcChargingKw(),
+                c.getImagePath()
+        );
+    }
 }

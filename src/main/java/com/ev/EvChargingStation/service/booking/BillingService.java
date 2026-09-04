@@ -15,7 +15,7 @@ public class BillingService {
         long chargingMinutes = Duration.between(session.getStartTime(), session.getEndTime()).toMinutes();
 
         double effectivePower = session.getCharger().getOutputPower();
-        Double vehicleMax = session.getBooking().getVehicle().getMaxChargingPower();
+        Double vehicleMax = session.getBooking().getVehicle().getCatalogueVehicle().getMaxDcChargingKw();
         if (vehicleMax != null && vehicleMax > 0) {
             effectivePower = Math.min(effectivePower, vehicleMax);
         }

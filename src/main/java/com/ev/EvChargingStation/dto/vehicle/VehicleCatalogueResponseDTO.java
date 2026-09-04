@@ -10,14 +10,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class VehicleResponseDTO {
-
+public class VehicleCatalogueResponseDTO {
     private Long id;
-    private Long catalogueVehicleId;
     private String manufacturer;
     private String model;
     private String variant;
-    private String registrationNumber;
     private Double batteryCapacityKwh;
     private ConnectorType connectorType;
     private Double maxAcChargingKw;

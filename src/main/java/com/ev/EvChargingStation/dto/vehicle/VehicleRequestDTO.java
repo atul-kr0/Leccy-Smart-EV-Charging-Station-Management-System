@@ -1,6 +1,8 @@
 package com.ev.EvChargingStation.dto.vehicle;
 
-import com.ev.EvChargingStation.enums.ConnectorType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +14,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class VehicleRequestDTO {
 
-    private String manufacturer;
-    private String model;
+    @NotBlank(message = "Registration number is required")
+    @Pattern(
+            regexp = "^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$",
+            message = "Enter a valid registration number (e.g. DL01AB1234)"
+    )
     private String registrationNumber;
-    private Double batteryCapacity;
-    private ConnectorType connectorType;
-    private Double maxChargingPower;
+
+    @NotNull(message = "Vehicle variant is required")
+    private Long catalogueVehicleId;
 }

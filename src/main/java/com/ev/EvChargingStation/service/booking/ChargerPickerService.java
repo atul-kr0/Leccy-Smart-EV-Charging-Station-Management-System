@@ -61,15 +61,15 @@ public class ChargerPickerService {
             );
         }
 
-        if (vehicle.getBatteryCapacity() == null
-                || vehicle.getBatteryCapacity() <= 0) {
+        if (vehicle.getCatalogueVehicle().getBatteryCapacityKwh() == null
+                || vehicle.getCatalogueVehicle().getBatteryCapacityKwh() <= 0) {
 
             throw new IllegalArgumentException(
                     "Invalid vehicle battery capacity."
             );
         }
 
-        return vehicle.getBatteryCapacity()
+        return vehicle.getCatalogueVehicle().getBatteryCapacityKwh()
                 * (targetBatteryPercentage - currentBatteryPercentage)
                 / 100.0;
     }
@@ -100,13 +100,13 @@ public class ChargerPickerService {
 
         double effectivePower = charger.getOutputPower();
 
-        if (vehicle.getMaxChargingPower() != null
-                && vehicle.getMaxChargingPower() > 0) {
+        Double vehicleMaxChargingPower = vehicle.getCatalogueVehicle().getMaxDcChargingKw();
+        if (vehicleMaxChargingPower == null || vehicleMaxChargingPower <= 0) {
+            vehicleMaxChargingPower = vehicle.getCatalogueVehicle().getMaxAcChargingKw();
+        }
 
-            effectivePower = Math.min(
-                    effectivePower,
-                    vehicle.getMaxChargingPower()
-            );
+        if (vehicleMaxChargingPower != null && vehicleMaxChargingPower > 0) {
+            effectivePower = Math.min(effectivePower, vehicleMaxChargingPower);
         }
 
         double energyNeeded = calculateEstimatedEnergyRequired(
@@ -284,7 +284,7 @@ public class ChargerPickerService {
             }
 
             // Skip incompatible chargers.
-            if (charger.getConnectorType() != vehicle.getConnectorType()) {
+            if (charger.getConnectorType() != vehicle.getCatalogueVehicle().getConnectorType()) {
                 continue;
             }
 
