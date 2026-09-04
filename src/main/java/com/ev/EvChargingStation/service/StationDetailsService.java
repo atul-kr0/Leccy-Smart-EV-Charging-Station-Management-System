@@ -228,7 +228,7 @@ public class StationDetailsService {
 
 
             // -------------------------------------------------
-            // COUNT CHARGERS
+            // COUNT PHYSICAL CHARGER STATUS
             // -------------------------------------------------
 
             for (
@@ -261,7 +261,7 @@ public class StationDetailsService {
 
 
             // -------------------------------------------------
-            // LOWEST WAITING TIME
+            // EFFECTIVE WAITING TIME
             // -------------------------------------------------
 
             int waitingTime =
@@ -302,7 +302,7 @@ public class StationDetailsService {
 
 
     // =========================================================
-    // WAITING TIME
+    // EFFECTIVE WAITING TIME
     // =========================================================
 
     private int calculateConnectorWaitingTime(
@@ -320,7 +320,7 @@ public class StationDetailsService {
             /*
              * OUT_OF_SERVICE:
              *
-             * Don't consider it.
+             * This charger cannot serve the user.
              */
 
             if (
@@ -333,56 +333,63 @@ public class StationDetailsService {
 
 
             /*
-             * AVAILABLE:
+             * IMPORTANT:
              *
-             * User can immediately use it.
+             * Do NOT return 0 just because the physical
+             * charger status is AVAILABLE.
              *
-             * Therefore queue = 0.
+             * There may already be a WAITING or NOTIFIED
+             * booking assigned to this charger.
+             *
+             * ChargerPickerService.calculateWaitingTime()
+             * knows about:
+             *
+             *   CHARGING
+             *   NOTIFIED
+             *   WAITING
+             *
+             * and calculates the effective queue for us.
              */
 
-            if (
-                    charger.getChargerStatus()
-                            == ChargerStatus.AVAILABLE
-            ) {
-
-                return 0;
-            }
+            int waitingTime =
+                    chargerPickerService
+                            .calculateWaitingTime(
+                                    charger
+                            );
 
 
             /*
-             * BUSY:
+             * Multiple chargers of the same connector type
+             * work in parallel.
              *
-             * Reuse the queue calculation from
-             * ChargerPickerService.
+             * Therefore we want the charger that becomes
+             * available first.
+             *
+             * Example:
+             *
+             * CCS2 #1 -> 25 min
+             * CCS2 #2 -> 60 min
+             *
+             * Result -> 25 min
+             *
+             * NOT 85 min.
              */
 
             if (
-                    charger.getChargerStatus()
-                            == ChargerStatus.BUSY
+                    lowestWaitingTime == null
+                            || waitingTime
+                            < lowestWaitingTime
             ) {
 
-                int waitingTime =
-                        chargerPickerService
-                                .calculateWaitingTime(
-                                        charger
-                                );
-
-
-                if (
-                        lowestWaitingTime == null
-                                || waitingTime
-                                < lowestWaitingTime
-                ) {
-
-                    lowestWaitingTime =
-                            waitingTime;
-                }
+                lowestWaitingTime =
+                        waitingTime;
             }
         }
 
 
         /*
-         * Every charger is OUT_OF_SERVICE.
+         * Every charger of this connector type is
+         * OUT_OF_SERVICE.
          */
 
         if (lowestWaitingTime == null) {
